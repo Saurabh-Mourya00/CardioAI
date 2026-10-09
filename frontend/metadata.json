@@ -1,0 +1,6 @@
+{
+  "name": "CardioPulse 3D - Cardiovascular Risk Visualization",
+  "description": "Clinical decision support frontend with interactive 3D coronary artery tree visualization (LAD, LCX, RCA), 54-feature clinical assessment, and model explainability.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
