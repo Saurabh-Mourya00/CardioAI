@@ -16,9 +16,78 @@ FEATURE_NAMES = list(
     lad_pipeline.named_steps["preprocessor"].feature_names_in_
 )
 
-# Create a synthetic test request with every required field.
+# Create a synthetic valid request with every required field.
 # This is for software testing only, not clinical interpretation.
-payload = {name: 0 for name in FEATURE_NAMES}
+valid_baseline_payload = {
+    "Age": 38,
+    "Weight": 74,
+    "Length": 178,
+    "Sex": "Male",
+    "BMI": 23.4,
+    "DM": 0,
+    "HTN": 0,
+    "Current Smoker": 0,
+    "EX-Smoker": 0,
+    "FH": 0,
+    "Obesity": "N",
+    "CRF": "N",
+    "CVA": "N",
+    "Airway disease": "N",
+    "Thyroid Disease": "N",
+    "CHF": "N",
+    "DLP": "N",
+    "BP": 118,
+    "PR": 62,
+    "Edema": 0,
+    "Weak Peripheral Pulse": "N",
+    "Lung rales": "N",
+    "Systolic Murmur": "N",
+    "Diastolic Murmur": "N",
+    "Typical Chest Pain": 0,
+    "Dyspnea": "N",
+    "Function Class": 0,
+    "Atypical": "N",
+    "Nonanginal": "Y",
+    "LowTH Ang": "N",
+    "Q Wave": 0,
+    "St Elevation": 0,
+    "St Depression": 0,
+    "Tinversion": 0,
+    "LVH": "N",
+    "Poor R Progression": "N",
+    "BBB": "N",
+    "FBS": 88,
+    "CR": 0.9,
+    "TG": 95,
+    "LDL": 82,
+    "HDL": 58,
+    "BUN": 13,
+    "ESR": 4,
+    "HB": 15.2,
+    "K": 4.3,
+    "Na": 142,
+    "WBC": 5600,
+    "Lymph": 34,
+    "Neut": 58,
+    "PLT": 220,
+    "EF-TTE": 65,
+    "Region RWMA": 0,
+    "VHD": "N",
+}
+
+missing = [name for name in FEATURE_NAMES if name not in valid_baseline_payload]
+extra = [name for name in valid_baseline_payload if name not in FEATURE_NAMES]
+
+if missing or extra:
+    raise ValueError(
+        f"Test payload does not match model features. "
+        f"Missing: {missing}; extra: {extra}"
+    )
+
+payload = {
+    name: valid_baseline_payload[name]
+    for name in FEATURE_NAMES
+}
 
 # Save the request as JSON
 output_file = BASE_DIR / "test_request.json"

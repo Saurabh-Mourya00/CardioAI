@@ -71,6 +71,10 @@ interface BackendPredictResponse {
   disclaimer: string;
 }
 
+interface BackendExplanationResponse extends ExplanationResponse {
+  method?: string;
+}
+
 /**
  * Transforms the FastAPI backend response (uppercase keys, wrapped in
  * { success, predictions }) into the flat PredictionResponse format
@@ -198,12 +202,54 @@ export async function explainRisk(
     return generateMockExplanation(patientData, target);
   }
 
-  // The backend does not yet implement a /explain endpoint with SHAP.
-  // Gracefully fall back to clinically plausible mock explanations so
-  // the SHAP panel remains functional. When a real /explain endpoint
-  // is added to the backend, remove this early return.
-  await new Promise((resolve) => setTimeout(resolve, 200));
-  return generateMockExplanation(patientData, target);
+  const endpoint = `${settings.baseUrl.replace(/\/+$/, '')}/explain`;
+  const backendPayload = {
+    ...transformPayloadForBackend(patientData),
+    target
+  };
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), settings.timeoutMs);
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      },
+      body: JSON.stringify(backendPayload),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMsg = `HTTP ${response.status}: ${response.statusText}`;
+      try {
+        const errorJson = JSON.parse(errorText);
+        if (errorJson.detail) {
+          errorMsg = typeof errorJson.detail === 'string'
+            ? errorJson.detail
+            : JSON.stringify(errorJson.detail);
+        }
+      } catch {
+        if (errorText) errorMsg += ` - ${errorText.slice(0, 150)}`;
+      }
+      throw new Error(`FastAPI Explanation Error: ${errorMsg}`);
+    }
+
+    const data = await response.json() as BackendExplanationResponse;
+    validateExplanationResponse(data);
+    return data;
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    if (err.name === 'AbortError') {
+      throw new Error(`Request timed out after ${settings.timeoutMs}ms while contacting ${endpoint}`);
+    }
+    throw err;
+  }
 }
 
 /**
@@ -268,6 +314,25 @@ function validatePredictionResponse(data: any): asserts data is PredictionRespon
     }
     if (data[t].probability < 0 || data[t].probability > 1) {
       throw new Error(`Invalid response format: '${t}.probability' must be between 0.0 and 1.0.`);
+    }
+  }
+}
+
+function validateExplanationResponse(data: any): asserts data is ExplanationResponse {
+  if (!data || !['CAD', 'LAD', 'LCX', 'RCA'].includes(data.target)) {
+    throw new Error('Invalid explanation response format: target is missing or invalid.');
+  }
+
+  if (!Array.isArray(data.features)) {
+    throw new Error('Invalid explanation response format: features must be an array.');
+  }
+
+  for (const item of data.features) {
+    if (typeof item.feature !== 'string') {
+      throw new Error('Invalid explanation response format: feature name must be a string.');
+    }
+    if (typeof item.shap_value !== 'number') {
+      throw new Error('Invalid explanation response format: shap_value must be numeric.');
     }
   }
 }

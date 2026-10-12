@@ -81,19 +81,19 @@ export const PATIENT_PRESETS: PatientPreset[] = [
     mockPrediction: {
       cad: {
         label: 'CAD',
-        probability: 0.89
+        probability: 1.0
       },
       lad: {
         label: 'Stenotic',
-        probability: 0.82
+        probability: 0.9996
       },
       lcx: {
-        label: 'Normal',
-        probability: 0.31
+        label: 'Stenotic',
+        probability: 0.6974
       },
       rca: {
         label: 'Stenotic',
-        probability: 0.74
+        probability: 0.9874
       }
     },
     mockExplanationCAD: {
@@ -211,19 +211,19 @@ export const PATIENT_PRESETS: PatientPreset[] = [
     mockPrediction: {
       cad: {
         label: 'CAD',
-        probability: 0.64
+        probability: 0.9359
       },
       lad: {
         label: 'Stenotic',
-        probability: 0.68
+        probability: 0.7397
       },
       lcx: {
         label: 'Normal',
-        probability: 0.22
+        probability: 0.2096
       },
       rca: {
         label: 'Normal',
-        probability: 0.27
+        probability: 0.2096
       }
     },
     mockExplanationCAD: {
@@ -333,19 +333,19 @@ export const PATIENT_PRESETS: PatientPreset[] = [
     mockPrediction: {
       cad: {
         label: 'Normal',
-        probability: 0.12
+        probability: 0.001
       },
       lad: {
         label: 'Normal',
-        probability: 0.08
+        probability: 0.0006
       },
       lcx: {
         label: 'Normal',
-        probability: 0.06
+        probability: 0.0258
       },
       rca: {
         label: 'Normal',
-        probability: 0.11
+        probability: 0.0545
       }
     },
     mockExplanationCAD: {

@@ -17,7 +17,7 @@ export interface PredictionResponse {
 export interface ShapFeature {
   feature: string;
   value: number | string;
-  shap_value: number; // Positive increases risk, negative decreases risk
+  shap_value: number; // Attribution value: positive increases risk, negative decreases risk
 }
 
 export interface ExplanationResponse {

@@ -84,20 +84,48 @@ export function usePrediction() {
     }
   }, [patientData, apiSettings]);
 
-  // Load preset patient
+  // Load preset patient. In mock mode we can show the bundled fixture
+  // immediately; in live mode the visible result must come from FastAPI.
   const loadPreset = useCallback((presetId: string) => {
     const found = PATIENT_PRESETS.find((p) => p.id === presetId);
     if (found) {
       setPatientData({ ...found.data });
       setActivePresetId(found.id);
-      // Auto-run or load mock prediction
-      setPrediction(found.mockPrediction);
-      setExplanation(found.mockExplanationCAD);
-      setPredictionStatus('success');
-      setExplanationStatus('success');
       setErrorMessage(null);
+
+      if (apiSettings.useMock) {
+        setPrediction(found.mockPrediction);
+        setExplanation(found.mockExplanationCAD);
+        setPredictionStatus('success');
+        setExplanationStatus('success');
+      } else {
+        setPrediction(null);
+        setExplanation(null);
+        setPredictionStatus('loading');
+        setExplanationStatus('loading');
+
+        predictRisk(found.data, apiSettings)
+          .then((predResult) => {
+            setPrediction(predResult);
+            setPredictionStatus('success');
+
+            return explainRisk(found.data, 'CAD', apiSettings)
+              .then((explainResult) => {
+                setExplanation(explainResult);
+                setExplanationStatus('success');
+              })
+              .catch(() => {
+                setExplanationStatus('unavailable');
+              });
+          })
+          .catch((err: any) => {
+            setPredictionStatus('error');
+            setExplanationStatus('error');
+            setErrorMessage(err.message || 'Failed to complete cardiovascular risk prediction.');
+          });
+      }
     }
-  }, []);
+  }, [apiSettings]);
 
   // Update explanation when selected vessel changes (if user wants vessel-specific SHAP)
   const loadVesselExplanation = useCallback(async (vessel: VesselKey) => {
@@ -117,7 +145,7 @@ export function usePrediction() {
   // Run initial prediction on mount for the default high-risk preset
   useEffect(() => {
     loadPreset('preset-high-cad');
-  }, [loadPreset]);
+  }, []);
 
   return {
     patientData,

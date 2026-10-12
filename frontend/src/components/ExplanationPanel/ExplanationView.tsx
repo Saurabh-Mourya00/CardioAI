@@ -37,7 +37,7 @@ export const ExplanationView: React.FC<ExplanationViewProps> = ({
         <div className="flex items-center gap-1.5">
           <TrendingUp className="w-4 h-4 text-[#cf2d56]" />
           <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[rgba(38,37,30,0.8)]">
-            Model Explainability (SHAP Values)
+            Model Explainability
           </h3>
         </div>
 
@@ -69,7 +69,7 @@ export const ExplanationView: React.FC<ExplanationViewProps> = ({
       {status === 'loading' && (
         <div className="py-8 text-center text-xs text-[rgba(38,37,30,0.6)] space-y-2">
           <div className="w-6 h-6 border-2 border-[#26251e] border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="font-mono">Computing SHAP feature attributions...</p>
+          <p className="font-mono">Computing feature attributions...</p>
         </div>
       )}
 
@@ -78,7 +78,7 @@ export const ExplanationView: React.FC<ExplanationViewProps> = ({
           <Clock className="w-6 h-6 text-[rgba(38,37,30,0.4)] mx-auto mb-1.5" />
           <h4 className="text-xs font-semibold text-[#26251e]">Waiting for Model Explanation</h4>
           <p className="text-[11px] text-[rgba(38,37,30,0.6)] mt-1 max-w-sm mx-auto">
-            The FastAPI endpoint <code className="font-mono text-[#26251e]">POST /explain</code> has not returned SHAP explanations for this target yet.
+            The FastAPI endpoint <code className="font-mono text-[#26251e]">POST /explain</code> has not returned feature attribution data for this target yet.
           </p>
         </div>
       )}
@@ -86,7 +86,17 @@ export const ExplanationView: React.FC<ExplanationViewProps> = ({
       {status === 'error' && (
         <div className="py-4 px-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-[#cf2d56] flex items-center gap-2">
           <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>Failed to retrieve SHAP values from server.</span>
+          <span>Failed to retrieve feature attribution data from server.</span>
+        </div>
+      )}
+
+      {status === 'success' && explanation && explanation.features.length === 0 && (
+        <div className="py-6 px-4 bg-[#f2f1ed] rounded-lg border border-[rgba(38,37,30,0.1)] text-center">
+          <Info className="w-6 h-6 text-[rgba(38,37,30,0.4)] mx-auto mb-1.5" />
+          <h4 className="text-xs font-semibold text-[#26251e]">No Dominant Feature Shift</h4>
+          <p className="text-[11px] text-[rgba(38,37,30,0.6)] mt-1 max-w-sm mx-auto">
+            This case is close to the reference profile used for attribution, so no individual input produced a measurable change for this target.
+          </p>
         </div>
       )}
 
@@ -104,7 +114,7 @@ export const ExplanationView: React.FC<ExplanationViewProps> = ({
             </span>
           </div>
 
-          {/* Divergent Horizontal SHAP Bars */}
+          {/* Divergent horizontal attribution bars */}
           <div className="space-y-2 pt-1">
             {explanation.features.map((item, idx) => {
               const isPositive = item.shap_value >= 0;
@@ -168,7 +178,7 @@ export const ExplanationView: React.FC<ExplanationViewProps> = ({
           <div className="text-[10px] text-[rgba(38,37,30,0.5)] pt-1 flex items-center justify-between">
             <span>Target: {explanation.target}</span>
             {explanation.base_value !== undefined && (
-              <span>Model Expected Value (E[f(x)]): {explanation.base_value}</span>
+              <span>Reference Probability: {explanation.base_value}</span>
             )}
           </div>
         </div>

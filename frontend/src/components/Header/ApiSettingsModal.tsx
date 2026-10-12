@@ -193,10 +193,30 @@ export const ApiSettingsModal: React.FC<ApiSettingsModalProps> = ({
                 <pre className="bg-[#26251e] text-[#f2f1ed] p-3 rounded-lg text-[11px] font-mono overflow-x-auto">
 {`// Expected Response Payload
 {
-  "cad": { "label": "CAD", "probability": 0.89 },
-  "lad": { "label": "Stenotic", "probability": 0.82 },
-  "lcx": { "label": "Normal", "probability": 0.31 },
-  "rca": { "label": "Stenotic", "probability": 0.74 }
+  "success": true,
+  "predictions": {
+    "CAD": {
+      "prediction": 1,
+      "label": "CAD",
+      "positive_class_probability": 0.9359
+    },
+    "LAD": {
+      "prediction": 1,
+      "label": "Stenotic",
+      "positive_class_probability": 0.7397
+    },
+    "LCX": {
+      "prediction": 0,
+      "label": "Normal",
+      "positive_class_probability": 0.2096
+    },
+    "RCA": {
+      "prediction": 0,
+      "label": "Normal",
+      "positive_class_probability": 0.2096
+    }
+  },
+  "disclaimer": "Educational decision-support prototype only..."
 }`}
                 </pre>
               </div>
@@ -206,13 +226,20 @@ export const ApiSettingsModal: React.FC<ApiSettingsModalProps> = ({
                   Endpoint 2: POST /explain
                 </span>
                 <pre className="bg-[#26251e] text-[#f2f1ed] p-3 rounded-lg text-[11px] font-mono overflow-x-auto">
-{`// Expected Response Payload
+{`// Expected Request Payload
 {
   "target": "CAD",
-  "base_value": 0.38,
+  "...54 clinical features": "..."
+}
+
+// Expected Response Payload
+{
+  "target": "CAD",
+  "base_value": 0.001,
+  "method": "single-feature reference attribution",
   "features": [
-    { "feature": "Age", "value": 67, "shap_value": 0.21 },
-    { "feature": "Typical Chest Pain", "value": 1, "shap_value": 0.28 }
+    { "feature": "Age", "value": 67, "shap_value": 0.12 },
+    { "feature": "Typical Chest Pain", "value": 1, "shap_value": 0.08 }
   ]
 }`}
                 </pre>
